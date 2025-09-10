@@ -1,14 +1,21 @@
 import { GoogleGenAI } from "@google/genai";
 import { Task } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+function getApiKey(): string | undefined {
+  return (process.env.API_KEY as string | undefined) || (process.env.GEMINI_API_KEY as string | undefined);
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+function getClient(): GoogleGenAI {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("Gemini API key is not configured. Set GEMINI_API_KEY in your .env before building.");
+  }
+  return new GoogleGenAI({ apiKey });
+}
 
 export async function getInspiration(): Promise<string> {
   try {
+    const ai = getClient();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: "Generate a single, concise motivational quote about productivity or achieving goals. Keep it under 20 words.",
@@ -45,6 +52,7 @@ ${trackedList.length > 0 ? trackedList : "None"}
 `;
 
   try {
+     const ai = getClient();
      const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
