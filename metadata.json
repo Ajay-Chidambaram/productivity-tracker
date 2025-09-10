@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Gemini Productivity Tracker",
-  "description": "A daily productivity tracker to manage tasks and visualize progress, enhanced with AI-powered motivational quotes and daily summaries from Gemini.",
+  "name": "Supabase Productivity Tracker",
+  "description": "A daily productivity tracker to manage tasks day-by-day and visualize progress, with data persisted across devices using a Supabase backend.",
   "requestFramePermissions": []
 }

@@ -12,7 +12,6 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, categories, onAddNewCa
   const [category, setCategory] = useState<Category>(categories[0]?.name || '');
 
   useEffect(() => {
-    // If categories load after initial render, set a default
     if (!category && categories.length > 0) {
       setCategory(categories[0].name);
     }
@@ -49,7 +48,7 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, categories, onAddNewCa
         aria-label="Task category"
       >
         {categories.map(cat => (
-          <option key={cat.name} value={cat.name}>{cat.emoji} {cat.name}</option>
+          <option key={cat.id} value={cat.name}>{cat.emoji} {cat.name}</option>
         ))}
         <option value="add-new" className="font-semibold text-indigo-600">＋ Add New Category...</option>
       </select>

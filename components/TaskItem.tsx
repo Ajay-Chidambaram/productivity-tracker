@@ -4,9 +4,9 @@ import { Task, CategoryObject } from '../types';
 interface TaskItemProps {
   task: Task;
   categories: CategoryObject[];
-  onToggleTask: (id: string) => void;
-  onDeleteTask: (id: string) => void;
-  onToggleTimer: (id: string) => void;
+  onToggleTask: (id: number) => void;
+  onDeleteTask: (id: number) => void;
+  onToggleTimer: (id: number) => void;
 }
 
 const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (

@@ -5,16 +5,16 @@ import TaskItem from './TaskItem';
 interface TaskListProps {
   tasks: Task[];
   categories: CategoryObject[];
-  onToggleTask: (id: string) => void;
-  onDeleteTask: (id: string) => void;
-  onToggleTimer: (id: string) => void;
+  onToggleTask: (id: number) => void;
+  onDeleteTask: (id: number) => void;
+  onToggleTimer: (id: number) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, categories, onToggleTask, onDeleteTask, onToggleTimer }) => {
   if (tasks.length === 0) {
     return (
       <div className="text-center py-16 px-4 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-        <h3 className="font-semibold text-slate-700 text-lg">Your task list is empty!</h3>
+        <h3 className="font-semibold text-slate-700 text-lg">Your task list for this day is empty!</h3>
         <p className="text-sm text-slate-500 mt-1">Add a new task above to get started.</p>
       </div>
     );

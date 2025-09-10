@@ -1,64 +1,61 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Task, ProductivityData, Category, CategoryData, CategoryObject, DEFAULT_CATEGORIES, CUSTOM_CATEGORY_PALETTE } from './types';
+import { Task, CategoryObject } from './types';
 import Header from './components/Header';
 import TaskInput from './components/TaskInput';
 import TaskList from './components/TaskList';
 import ProductivityDashboard from './components/ProductivityDashboard';
-import { getInspiration, summarizeDay } from './services/geminiService';
+import DateNavigator from './components/DateNavigator';
+import OverdueTasks from './components/OverdueTasks';
+import * as supabaseService from './services/supabaseService';
+import { formatDate } from './utils';
 
 const App: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    try {
-      const savedTasks = localStorage.getItem('tasks');
-      return savedTasks ? JSON.parse(savedTasks) : [];
-    } catch (error) {
-      console.error("Failed to parse tasks from localStorage", error);
-      return [];
-    }
-  });
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [overdueTasks, setOverdueTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<CategoryObject[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const [categories, setCategories] = useState<CategoryObject[]>(() => {
-    try {
-      const savedCategories = localStorage.getItem('categories');
-      return savedCategories ? JSON.parse(savedCategories) : DEFAULT_CATEGORIES;
-    } catch (error) {
-      console.error("Failed to parse categories from localStorage", error);
-      return DEFAULT_CATEGORIES;
-    }
-  });
-
-  const [loadingInspiration, setLoadingInspiration] = useState(false);
-  const [loadingSummary, setLoadingSummary] = useState(false);
-  const [inspiration, setInspiration] = useState('');
-  const [summary, setSummary] = useState('');
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMovingTasks, setIsMovingTasks] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryEmoji, setNewCategoryEmoji] = useState('');
   const [categoryError, setCategoryError] = useState('');
+  
+  const dateString = useMemo(() => formatDate(selectedDate), [selectedDate]);
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    const fetchAllData = async () => {
+      setIsLoading(true);
+      
+      const [fetchedCategories, fetchedTasks, fetchedOverdueTasks] = await Promise.all([
+          supabaseService.getCategories(),
+          supabaseService.getTasksForDate(dateString),
+          supabaseService.getIncompleteTasksBeforeDate(dateString)
+      ]);
 
-  useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
-  }, [categories]);
-
-  const addTask = useCallback((text: string, category: Category) => {
-    if (text.trim() === '' || category.trim() === '') return;
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      text,
-      completed: false,
-      category,
-      timeSpent: 0,
-      timerIsRunning: false,
+      setCategories(fetchedCategories);
+      setTasks(fetchedTasks.map(t => ({...t, timerIsRunning: false})));
+      setOverdueTasks(fetchedOverdueTasks.map(t => ({...t, timerIsRunning: false})));
+      setIsLoading(false);
     };
-    setTasks(prevTasks => [...prevTasks, newTask]);
-  }, []);
 
-  const addCategory = useCallback(() => {
+    fetchAllData();
+  }, [dateString]);
+
+  const addTask = useCallback(async (text: string, category: string) => {
+    if (text.trim() === '' || category.trim() === '') return;
+    try {
+      const newTask = await supabaseService.addTask({ text, category, date: dateString });
+      if (newTask) {
+        setTasks(prevTasks => [...prevTasks, {...newTask, timerIsRunning: false}]);
+      }
+    } catch (error) {
+      console.error("Failed to add task:", error);
+    }
+  }, [dateString]);
+  
+  const addCategory = useCallback(async () => {
     if (newCategoryName.trim() === '') {
       setCategoryError('Category name cannot be empty.');
       return;
@@ -68,74 +65,115 @@ const App: React.FC = () => {
       return;
     }
 
-    const defaultCategoryNames = DEFAULT_CATEGORIES.map(dc => dc.name);
-    const customCategories = categories.filter(c => !defaultCategoryNames.includes(c.name));
-    const nextVisual = CUSTOM_CATEGORY_PALETTE[customCategories.length % CUSTOM_CATEGORY_PALETTE.length];
-    
-    const newCategory: CategoryObject = {
-      name: newCategoryName.trim(),
-      emoji: newCategoryEmoji || '✨',
-      visuals: nextVisual,
-    };
-
-    setCategories(prev => [...prev, newCategory]);
-    setIsAddCategoryModalOpen(false);
-    setNewCategoryName('');
-    setNewCategoryEmoji('');
-    setCategoryError('');
+    try {
+      const newCategory = await supabaseService.addCategory(newCategoryName.trim(), newCategoryEmoji || '✨');
+      if (newCategory) {
+        setCategories(prev => [...prev, newCategory]);
+        setIsAddCategoryModalOpen(false);
+        setNewCategoryName('');
+        setNewCategoryEmoji('');
+        setCategoryError('');
+      }
+    } catch (error) {
+        console.error("Failed to add category:", error);
+        setCategoryError('Could not add category. Please try again.');
+    }
   }, [newCategoryName, newCategoryEmoji, categories]);
 
-  const toggleTask = useCallback((id: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  }, []);
+  const toggleTask = useCallback(async (id: number) => {
+    const taskToToggle = tasks.find(task => task.id === id);
+    if (!taskToToggle) return;
+    
+    const isCompleted = !taskToToggle.completed;
+    const completed_at = isCompleted ? dateString : null;
 
-  const deleteTask = useCallback((id: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+    try {
+      const updatedTask = await supabaseService.updateTask(id, { completed: isCompleted, completed_at });
+      if(updatedTask) {
+         setTasks(prevTasks =>
+            prevTasks.map(task =>
+              task.id === id ? { ...task, completed: isCompleted, completed_at } : task
+            )
+          );
+      }
+    } catch (error) {
+      console.error("Failed to toggle task:", error);
+    }
+  }, [tasks, dateString]);
+
+  const deleteTask = useCallback(async (id: number) => {
+    try {
+        await supabaseService.deleteTask(id);
+        setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+    } catch (error) {
+        console.error("Failed to delete task:", error);
+    }
   }, []);
   
-  const handleToggleTimer = useCallback((taskId: string) => {
+  const handleToggleTimer = useCallback(async (taskId: number) => {
     const now = Date.now();
-    setTasks(currentTasks => {
-        const newTasks = [...currentTasks];
-        const currentRunningTaskIndex = newTasks.findIndex(t => t.timerIsRunning);
-        const targetTaskIndex = newTasks.findIndex(t => t.id === taskId);
+    let taskToUpdate: Task | undefined;
+    let newTimeSpent: number | undefined;
 
-        if (targetTaskIndex === -1) return newTasks;
-
-        // Stop the currently running task if there is one
-        if (currentRunningTaskIndex !== -1) {
-            const runningTask = newTasks[currentRunningTaskIndex];
-            const elapsed = Math.round((now - (runningTask.startTime || now)) / 1000);
-            newTasks[currentRunningTaskIndex] = {
-                ...runningTask,
-                timeSpent: runningTask.timeSpent + elapsed,
-                timerIsRunning: false,
-                startTime: undefined,
-            };
+    const newTasks = tasks.map(task => {
+        if (task.timerIsRunning && task.id !== taskId) { // Stop currently running task
+            const elapsed = Math.round((now - (task.startTime || now)) / 1000);
+            newTimeSpent = task.timeSpent + elapsed;
+            taskToUpdate = { ...task, timeSpent: newTimeSpent };
+            return { ...task, timeSpent: newTimeSpent, timerIsRunning: false, startTime: undefined };
         }
-
-        // If the target task was not the one running, start it.
-        if (currentRunningTaskIndex !== targetTaskIndex) {
-            newTasks[targetTaskIndex] = {
-                ...newTasks[targetTaskIndex],
-                timerIsRunning: true,
-                startTime: now,
-            };
+        if (task.id === taskId) { // Toggle target task
+            if (task.timerIsRunning) { // Stop it
+                const elapsed = Math.round((now - (task.startTime || now)) / 1000);
+                newTimeSpent = task.timeSpent + elapsed;
+                taskToUpdate = { ...task, timeSpent: newTimeSpent };
+                return { ...task, timeSpent: newTimeSpent, timerIsRunning: false, startTime: undefined };
+            } else { // Start it
+                return { ...task, timerIsRunning: true, startTime: now };
+            }
         }
-        
-        return newTasks;
+        return task;
     });
-  }, []);
 
-  const clearCompleted = useCallback(() => {
-    setTasks(prevTasks => prevTasks.filter(task => !task.completed));
-  }, []);
+    setTasks(newTasks);
 
-  const productivityData: ProductivityData = useMemo(() => {
+    if (taskToUpdate && newTimeSpent !== undefined) {
+        try {
+            await supabaseService.updateTask(taskToUpdate.id, { time_spent: newTimeSpent });
+        } catch (error) {
+            console.error("Failed to update time spent:", error);
+            // Optionally revert UI state on failure
+        }
+    }
+  }, [tasks]);
+
+  const clearCompleted = useCallback(async () => {
+    const completedIds = tasks.filter(task => task.completed).map(task => task.id);
+    if(completedIds.length === 0) return;
+
+    try {
+        await supabaseService.deleteTasks(completedIds);
+        setTasks(prevTasks => prevTasks.filter(task => !task.completed));
+    } catch (error) {
+        console.error("Failed to clear completed tasks:", error);
+    }
+  }, [tasks]);
+  
+  const moveOverdueTasks = useCallback(async () => {
+      setIsMovingTasks(true);
+      const taskIds = overdueTasks.map(t => t.id);
+      try {
+        const movedTasks = await supabaseService.moveTasks(taskIds, dateString);
+        setTasks(prev => [...prev, ...movedTasks.map(t => ({...t, timerIsRunning: false}))]);
+        setOverdueTasks([]);
+      } catch (error) {
+        console.error("Failed to move tasks:", error);
+      } finally {
+        setIsMovingTasks(false);
+      }
+  }, [overdueTasks, dateString]);
+
+  const productivityData = useMemo(() => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
     const pending = total - completed;
@@ -143,8 +181,8 @@ const App: React.FC = () => {
     return { total, completed, pending, percentage };
   }, [tasks]);
 
-  const categoryData: CategoryData[] = useMemo(() => {
-    const dataMap = new Map<Category, number>();
+  const categoryData = useMemo(() => {
+    const dataMap = new Map<string, number>();
     categories.forEach(cat => dataMap.set(cat.name, 0));
 
     tasks.forEach(task => {
@@ -157,60 +195,29 @@ const App: React.FC = () => {
         time: parseFloat(time.toFixed(2)),
     })).filter(d => d.time > 0);
   }, [tasks, categories]);
-  
-  const handleGetInspiration = async () => {
-    setLoadingInspiration(true);
-    setInspiration('');
-    try {
-      const quote = await getInspiration();
-      setInspiration(quote);
-    } catch (error) {
-      console.error("Failed to get inspiration:", error);
-      setInspiration("Could not fetch an inspiring quote. Try again later.");
-    } finally {
-      setLoadingInspiration(false);
-    }
-  };
-
-  const handleSummarizeDay = async () => {
-    const completedOrTrackedTasks = tasks.filter(t => t.completed || t.timeSpent > 0);
-    if (completedOrTrackedTasks.length === 0) {
-      setSummary("You haven't completed or tracked any tasks yet. Finish or track a task to get a summary!");
-      setIsSummaryModalOpen(true);
-      return;
-    }
-    
-    setLoadingSummary(true);
-    setIsSummaryModalOpen(true);
-    setSummary('');
-    try {
-      const result = await summarizeDay(tasks);
-      setSummary(result);
-    } catch (error) {
-      console.error("Failed to get summary:", error);
-      setSummary("Could not generate a summary of your day. Please try again.");
-    } finally {
-      setLoadingSummary(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Header 
-        onGetInspiration={handleGetInspiration} 
-        loading={loadingInspiration} 
-        inspiration={inspiration}
-      />
+      <Header />
       <main className="container mx-auto p-4 md:p-8">
+        <DateNavigator currentDate={selectedDate} onDateChange={setSelectedDate} />
+        {overdueTasks.length > 0 && (
+            <OverdueTasks count={overdueTasks.length} onMoveTasks={moveOverdueTasks} loading={isMovingTasks} />
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">My Tasks</h2>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">Tasks for Today</h2>
             <TaskInput 
               onAddTask={addTask} 
               categories={categories}
               onAddNewCategory={() => setIsAddCategoryModalOpen(true)}
             />
-            <TaskList tasks={tasks} categories={categories} onToggleTask={toggleTask} onDeleteTask={deleteTask} onToggleTimer={handleToggleTimer} />
+            {isLoading ? (
+                 <div className="text-center py-16"><p className="text-slate-500">Loading tasks...</p></div>
+            ) : (
+                <TaskList tasks={tasks} categories={categories} onToggleTask={toggleTask} onDeleteTask={deleteTask} onToggleTimer={handleToggleTimer} />
+            )}
              {tasks.some(t => t.completed) && (
               <div className="mt-4 text-right">
                 <button
@@ -227,43 +234,10 @@ const App: React.FC = () => {
               data={productivityData}
               categoryData={categoryData}
               categories={categories}
-              onSummarize={handleSummarizeDay}
-              loading={loadingSummary}
             />
           </div>
         </div>
       </main>
-
-      {/* Summary Modal */}
-      {isSummaryModalOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => setIsSummaryModalOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full"
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">Your Daily Summary</h3>
-            {loadingSummary ? (
-              <div className="flex items-center justify-center h-24">
-                 <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-            ) : (
-              <p className="text-slate-600 whitespace-pre-wrap">{summary}</p>
-            )}
-            <button
-              onClick={() => setIsSummaryModalOpen(false)}
-              className="mt-6 w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Add Category Modal */}
       {isAddCategoryModalOpen && (

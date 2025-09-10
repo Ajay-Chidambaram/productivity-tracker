@@ -8,12 +8,13 @@ export interface CategoryVisuals {
 }
 
 export interface CategoryObject {
+  id: number;
   name: Category;
   emoji: string;
   visuals: CategoryVisuals;
 }
 
-export const DEFAULT_CATEGORIES: CategoryObject[] = [
+export const DEFAULT_CATEGORIES: Omit<CategoryObject, 'id'>[] = [
   { name: 'Work', emoji: '💼', visuals: { base: 'bg-sky-100', text: 'text-sky-800', border: 'border-sky-200', fill: '#0ea5e9' } },
   { name: 'Personal', emoji: '🏡', visuals: { base: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200', fill: '#10b981' } },
   { name: 'Learning', emoji: '📚', visuals: { base: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200', fill: '#8b5cf6' } },
@@ -30,13 +31,16 @@ export const CUSTOM_CATEGORY_PALETTE: CategoryVisuals[] = [
 
 
 export interface Task {
-  id: string;
+  id: number;
   text: string;
   completed: boolean;
   category: Category;
   timeSpent: number; // in seconds
+  date: string; // YYYY-MM-DD
+  completed_at: string | null; // YYYY-MM-DD
+  // Client-side only properties
   startTime?: number; // timestamp when timer started
-  timerIsRunning: boolean;
+  timerIsRunning?: boolean;
 }
 
 export interface ProductivityData {
