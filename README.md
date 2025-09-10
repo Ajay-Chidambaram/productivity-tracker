@@ -9,14 +9,21 @@ Follow these instructions to run the application on your local machine using Doc
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) installed and running on your machine.
+- A Gemini API key.
 
 ### Instructions
 
 1.  **Save all files:** Ensure that `Dockerfile`, `docker-compose.yml`, and all other application files (`index.html`, `index.tsx`, etc.) are in the same directory.
 
-2.  **Open your terminal:** Navigate to the project directory where you saved the files.
+2.  **Create a `.env` file:** In the same directory, create a new file named `.env`. Add your Gemini API key to this file like so:
+    ```
+    API_KEY=your_actual_gemini_api_key
+    ```
+    This file is used by Docker Compose to securely pass your API key to the application without hardcoding it.
 
-3.  **Build and run the container:** Execute the following command in your terminal. This will build the Docker image and start the application container in the background.
+3.  **Open your terminal:** Navigate to the project directory where you saved the files.
+
+4.  **Build and run the container:** Execute the following command in your terminal. This will build the Docker image and start the application container in the background.
 
     ```bash
     docker-compose up --build -d
@@ -24,7 +31,7 @@ Follow these instructions to run the application on your local machine using Doc
     *   `--build` ensures the image is rebuilt if you make changes to the Dockerfile or app code.
     *   `-d` runs the container in detached mode (in the background).
 
-4.  **Access the application:** Open your web browser and go to the following address:
+5.  **Access the application:** Open your web browser and go to the following address:
 
     [http://localhost:8080](http://localhost:8080)
 
