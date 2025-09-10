@@ -8,6 +8,8 @@ services:
       args:
         # Pass through API key so Vite can inline it at build time
         GEMINI_API_KEY: ${GEMINI_API_KEY}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
     # Name the container for easier management
     container_name: gemini-productivity-tracker
     # Map host port 9090 to container port 80

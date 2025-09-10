@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { Task, CategoryObject, CategoryVisuals, CUSTOM_CATEGORY_PALETTE, DEFAULT_CATEGORIES } from '../types';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Supabase environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) are not set. Please check your Vercel project settings. The application cannot start without them.");
