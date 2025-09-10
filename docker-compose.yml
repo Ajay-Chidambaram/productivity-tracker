@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    # Build the Docker image from the Dockerfile in the current directory
+    build: .
+    # Name the container for easier management
+    container_name: gemini-productivity-tracker
+    # Map port 8080 on the host to port 80 in the container
+    ports:
+      - "8080:80"
+    # Load environment variables from a .env file in the same directory
+    env_file:
+      - .env
+    # Automatically restart the container if it stops, unless manually stopped
+    restart: unless-stopped
