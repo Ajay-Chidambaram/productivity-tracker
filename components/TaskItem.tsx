@@ -65,17 +65,17 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onToggleTask, onD
   const visuals = category?.visuals || { base: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' };
 
   return (
-    <li className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors group gap-3">
+    <li className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors group gap-3">
       <div className="flex items-center gap-3 flex-grow w-full sm:w-auto">
         <input
           type="checkbox"
           checked={task.completed}
           onChange={() => onToggleTask(task.id)}
-          className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0 mt-1 sm:mt-0"
+          className="h-5 w-5 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0 mt-1 sm:mt-0 bg-white dark:bg-slate-800"
           aria-labelledby={`task-text-${task.id}`}
         />
         <div className="flex-grow flex items-baseline flex-wrap gap-x-2 gap-y-1">
-           <span id={`task-text-${task.id}`} className={`text-slate-700 ${task.completed ? 'line-through text-slate-400' : ''}`}>
+           <span id={`task-text-${task.id}`} className={`text-slate-700 dark:text-slate-200 ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
              {task.text}
            </span>
            {category && (
@@ -87,18 +87,18 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onToggleTask, onD
         </div>
       </div>
       <div className="flex items-center gap-4 w-full sm:w-auto justify-end pl-8 sm:pl-0">
-        <span className="font-mono text-sm text-slate-500 w-24 text-right">{formatTime(displayTime)}</span>
+        <span className="font-mono text-sm text-slate-500 dark:text-slate-400 w-24 text-right">{formatTime(displayTime)}</span>
         <button
           onClick={() => onToggleTimer(task.id)}
           disabled={task.completed}
-          className="text-slate-500 hover:text-indigo-600 disabled:text-slate-300 disabled:cursor-not-allowed"
+          className="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:text-slate-300 dark:disabled:text-slate-600 disabled:cursor-not-allowed"
           aria-label={task.timerIsRunning ? `Pause timer for ${task.text}` : `Start timer for ${task.text}`}
         >
           {task.timerIsRunning ? <PauseIcon className="w-6 h-6"/> : <PlayIcon className="w-6 h-6"/>}
         </button>
         <button
           onClick={() => onDeleteTask(task.id)}
-          className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label={`Delete task: ${task.text}`}
         >
           <TrashIcon className="w-5 h-5" />

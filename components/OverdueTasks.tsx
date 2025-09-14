@@ -16,7 +16,7 @@ const ArrowRightIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 const OverdueTasks: React.FC<OverdueTasksProps> = ({ count, onMoveTasks, loading }) => {
   return (
-    <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 text-amber-900 p-4 rounded-r-lg flex flex-col sm:flex-row justify-between items-center gap-3">
+    <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 dark:border-amber-500 text-amber-900 dark:text-amber-100 p-4 rounded-r-lg flex flex-col sm:flex-row justify-between items-center gap-3 transition-colors">
       <div className="text-center sm:text-left">
         <p className="font-bold">You have {count} incomplete task{count > 1 ? 's' : ''} from previous days.</p>
         <p className="text-sm">Move them to today's list to keep track of them.</p>
@@ -24,7 +24,7 @@ const OverdueTasks: React.FC<OverdueTasksProps> = ({ count, onMoveTasks, loading
       <button 
         onClick={onMoveTasks}
         disabled={loading}
-        className="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors disabled:bg-amber-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+        className="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 dark:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-600 dark:hover:bg-amber-700 transition-colors disabled:bg-amber-300 dark:disabled:bg-amber-800 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
       >
         {loading ? (
             'Moving...'

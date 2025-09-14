@@ -38,33 +38,33 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ currentDate, onDateChange
   }).format(currentDate);
 
   return (
-    <div className="mb-6 p-4 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 transition-colors">
       <div className="text-center sm:text-left">
-        <h2 className="text-xl font-bold text-slate-800">{isToday ? 'Today' : formattedDate.split(',')[0]}</h2>
-        <p className="text-sm text-slate-500">{isToday ? formattedDate : `Viewing tasks for ${formattedDate}`}</p>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{isToday ? 'Today' : formattedDate.split(',')[0]}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{isToday ? formattedDate : `Viewing tasks for ${formattedDate}`}</p>
       </div>
       <div className="flex items-center gap-2">
         <button
             onClick={() => changeDate(-1)}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             aria-label="Previous day"
         >
-            <ChevronLeftIcon className="w-5 h-5 text-slate-600" />
+            <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
         {!isToday && (
             <button
                 onClick={goToToday}
-                className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
                 Today
             </button>
         )}
         <button
             onClick={() => changeDate(1)}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             aria-label="Next day"
         >
-            <ChevronRightIcon className="w-5 h-5 text-slate-600" />
+            <ChevronRightIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
       </div>
     </div>

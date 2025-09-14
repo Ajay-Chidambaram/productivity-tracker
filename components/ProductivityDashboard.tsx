@@ -27,8 +27,8 @@ const ProductivityDashboard: React.FC<DashboardProps> = ({ data, categoryData, c
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6 sticky top-8">
-      <h2 className="text-2xl font-bold text-slate-800">Daily Dashboard</h2>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 sticky top-8 transition-colors">
+      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Daily Dashboard</h2>
 
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
@@ -49,10 +49,10 @@ const ProductivityDashboard: React.FC<DashboardProps> = ({ data, categoryData, c
               ))}
             </Pie>
             <Tooltip />
-            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="text-3xl font-bold fill-slate-800">
+            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="text-3xl font-bold fill-slate-800 dark:fill-slate-100">
               {`${data.percentage}%`}
             </text>
-            <text x="50%" y="65%" textAnchor="middle" dominantBaseline="central" className="text-sm font-medium fill-slate-500">
+            <text x="50%" y="65%" textAnchor="middle" dominantBaseline="central" className="text-sm font-medium fill-slate-500 dark:fill-slate-400">
               Done
             </text>
           </PieChart>
@@ -60,18 +60,18 @@ const ProductivityDashboard: React.FC<DashboardProps> = ({ data, categoryData, c
       </div>
       
       <div className="grid grid-cols-2 gap-4 text-center">
-        <div className="bg-slate-50 p-4 rounded-lg">
-          <p className="text-sm font-medium text-slate-500">Total Tasks</p>
-          <p className="text-2xl font-bold text-slate-800">{data.total}</p>
+        <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg transition-colors">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Tasks</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{data.total}</p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm font-medium text-green-600">Completed</p>
-          <p className="text-2xl font-bold text-green-700">{data.completed}</p>
+        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg transition-colors">
+          <p className="text-sm font-medium text-green-600 dark:text-green-400">Completed</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">{data.completed}</p>
         </div>
       </div>
       
       <div>
-        <h3 className="text-lg font-bold text-slate-700 mb-2">Time per Category (min)</h3>
+        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">Time per Category (min)</h3>
         {categoryData.length > 0 ? (
           <div className="h-56 text-xs">
             <ResponsiveContainer width="100%" height="100%">
@@ -99,8 +99,8 @@ const ProductivityDashboard: React.FC<DashboardProps> = ({ data, categoryData, c
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="text-center py-6 px-4 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-500">Track time on a task to see your stats here!</p>
+          <div className="text-center py-6 px-4 bg-slate-50 dark:bg-slate-700 rounded-lg transition-colors">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Track time on a task to see your stats here!</p>
           </div>
         )}
       </div>
