@@ -2,9 +2,16 @@ import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
 const SunIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
-    <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM.663 3.955A.75.75 0 011.28 2.67l1.396.547a.75.75 0 01-.288 1.456l-1.396-.547a.75.75 0 01-.617-.129zM17.04 16.045a.75.75 0 01.617.129l1.396.547a.75.75 0 00.288-1.456l-1.396-.547a.75.75 0 00-.617.129zM2.343 13.243a.75.75 0 011.06 0l.989.989a.75.75 0 01-1.06 1.06l-.989-.989a.75.75 0 010-1.06zM16.707 3.293a.75.75 0 011.06 0l.989.989a.75.75 0 01-1.06 1.06l-.989-.989a.75.75 0 010-1.06zM5.05 5.05a.75.75 0 011.06 0l.989.989a.75.75 0 11-1.06 1.06l-.989-.989a.75.75 0 010-1.06zM14.95 14.95a.75.75 0 011.06 0l.989.989a.75.75 0 11-1.06 1.06l-.989-.989a.75.75 0 010-1.06zM10 11a1 1 0 100-2 1 1 0 000 2z" />
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        class="w-5 h-5">
+        <path stroke-linecap="round" 
+            stroke-linejoin="round" 
+            d="M12 3v1.5M12 19.5V21m9-9h-1.5M4.5 12H3m15.364-7.364l-1.061 1.061M6.697 17.303l-1.061 1.061m12.728 0-1.061-1.061M6.697 6.697 5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z" />
+    </svg>
 );
 
 const MoonIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
